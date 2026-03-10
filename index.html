@@ -1,5 +1,610 @@
 <!DOCTYPE html>
-<meta charset="utf-8">
-<title>Redirecting to https://synthesizer-project.github.io/synthesizer/</title>
-<meta http-equiv="refresh" content="0; URL=https://synthesizer-project.github.io/synthesizer/">
-<link rel="canonical" href="https://example.com/">
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Synthesizer Project</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garant:wght@400;500;600&family=Outfit:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg:           #07101f;
+      --surface:      #0c1829;
+      --border:       rgba(60, 130, 190, 0.16);
+      --border-hover: rgba(74, 150, 210, 0.42);
+      --accent:       #2b6090;
+      --accent-light: #4a9acc;
+      --text:         #dce8f2;
+      --text-muted:   #5a7a96;
+      --text-dim:     #304a62;
+    }
+
+    html, body { height: 100%; }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Outfit', sans-serif;
+      font-weight: 300;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 5rem 2rem;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* ── Background SVG layer ── */
+    .bg-layer {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Centre glow ── */
+    body::after {
+      content: '';
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 900px; height: 600px;
+      background: radial-gradient(ellipse, rgba(43, 96, 144, 0.09) 0%, transparent 68%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* ── Layout wrapper ── */
+    main {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 1060px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ── Header ── */
+    header {
+      text-align: center;
+      padding-bottom: 2.6rem;
+      animation: fadeUp 0.9s ease both;
+    }
+
+    .eyebrow {
+      display: none;
+    }
+
+    h1 {
+      font-family: 'Cormorant Garant', serif;
+      font-weight: 500;
+      font-size: clamp(2.6rem, 5vw, 4.2rem);
+      letter-spacing: 0.025em;
+      color: var(--text);
+      line-height: 1.1;
+      margin-bottom: 1.1rem;
+    }
+
+    .tagline {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 300;
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      letter-spacing: 0.02em;
+      max-width: 540px;
+      margin: 0 auto;
+      line-height: 1.65;
+    }
+
+    /* ── Piano key divider ── */
+    .keyboard-divider {
+      width: 100%;
+      margin-bottom: 2.8rem;
+      opacity: 0.08;
+      transition: opacity 0.4s ease;
+      animation: fadeUp 0.9s 0.18s ease both;
+    }
+
+    .keyboard-divider.sound-enabled {
+      opacity: 0.22;
+    }
+
+    .keyboard-divider svg {
+      width: 100%;
+      height: 22px;
+      display: block;
+    }
+
+    .piano-key {
+      transition: fill 0.06s ease;
+    }
+
+    .keyboard-divider.sound-enabled .piano-key--white {
+      cursor: pointer;
+    }
+
+    .keyboard-divider.sound-enabled .piano-key--black {
+      cursor: pointer;
+    }
+
+    .keyboard-divider.sound-enabled .piano-key--white:hover {
+      fill: #b8d8f0;
+    }
+
+    .keyboard-divider.sound-enabled .piano-key--black:hover {
+      fill: #1e4a72;
+    }
+
+    /* ── Sound toggle ── */
+    .sound-toggle {
+      position: fixed;
+      top: 1.4rem;
+      right: 1.6rem;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .sound-label {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.68rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      transition: color 0.25s;
+      user-select: none;
+    }
+
+    .sound-toggle.active .sound-label {
+      color: var(--text-muted);
+    }
+
+    .toggle-btn {
+      width: 38px;
+      height: 21px;
+      border-radius: 11px;
+      border: 1px solid rgba(74, 150, 210, 0.2);
+      background: rgba(43, 96, 144, 0.08);
+      cursor: pointer;
+      position: relative;
+      transition: background 0.25s, border-color 0.25s;
+      padding: 0;
+      outline: none;
+    }
+
+    .toggle-btn:focus-visible {
+      box-shadow: 0 0 0 2px rgba(74, 150, 210, 0.4);
+    }
+
+    .toggle-btn.active {
+      background: rgba(43, 96, 144, 0.45);
+      border-color: rgba(74, 150, 210, 0.55);
+    }
+
+    .toggle-thumb {
+      position: absolute;
+      top: 2px;
+      left: 2px;
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      background: var(--text-dim);
+      transition: transform 0.22s ease, background 0.22s;
+      pointer-events: none;
+    }
+
+    .toggle-btn.active .toggle-thumb {
+      transform: translateX(17px);
+      background: var(--accent-light);
+    }
+
+    /* ── Project cards ── */
+    .projects {
+      width: 100%;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.4rem;
+      animation: fadeUp 0.9s 0.36s ease both;
+    }
+
+    .card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 2.8rem 2rem 2.4rem;
+      border-radius: 16px;
+      border: 1px solid var(--border);
+      background: rgba(12, 24, 41, 0.55);
+      text-decoration: none;
+      color: inherit;
+      transition: transform 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease;
+    }
+
+    a.card:hover {
+      transform: translateY(-5px);
+      box-shadow:
+        0 20px 48px rgba(43, 96, 144, 0.20),
+        0 0 0 1px rgba(74, 150, 210, 0.28);
+      border-color: var(--border-hover);
+    }
+
+    .card-logo {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      margin-bottom: 1.6rem;
+      object-fit: contain;
+    }
+
+    .card-logo-placeholder {
+      width: 120px;
+      height: 120px;
+      border-radius: 50%;
+      margin-bottom: 1.5rem;
+      border: 1.5px dashed rgba(60, 130, 190, 0.25);
+      background: rgba(43, 96, 144, 0.04);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-logo-placeholder svg {
+      width: 30px;
+      height: 30px;
+      color: rgba(74, 150, 210, 0.25);
+    }
+
+    .card h2 {
+      font-family: 'Cormorant Garant', serif;
+      font-weight: 500;
+      font-size: 1.5rem;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.6rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .card p {
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-weight: 300;
+    }
+
+    .card--coming-soon {
+      opacity: 0.42;
+      cursor: default;
+    }
+
+    .badge {
+      font-family: 'Outfit', sans-serif;
+      font-size: 0.58rem;
+      font-weight: 400;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent-light);
+      background: rgba(43, 96, 144, 0.14);
+      border: 1px solid rgba(74, 150, 210, 0.22);
+      padding: 0.15em 0.6em 0.18em;
+      border-radius: 20px;
+      white-space: nowrap;
+      vertical-align: middle;
+      line-height: 2;
+    }
+
+    /* ── Footer ── */
+    footer {
+      margin-top: 3.5rem;
+      margin-bottom: 3rem;
+      animation: fadeUp 0.9s 0.54s ease both;
+    }
+
+    footer a {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 400;
+      transition: color 0.22s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+
+    footer a:hover { color: var(--text); }
+
+    footer a svg {
+      width: 20px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+
+    /* ── Keyframes ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(18px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 600px) {
+      body {
+        justify-content: flex-start;
+        padding-top: 4rem;
+      }
+      .projects {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (min-width: 601px) and (max-width: 900px) {
+      .projects { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Background: stars, sparkles, galaxy spirals -->
+  <svg class="bg-layer" xmlns="http://www.w3.org/2000/svg"
+       viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+
+    <!-- Round star dots — varying sizes -->
+    <circle cx="82"  cy="78"  r="3.5" fill="white" opacity="0.28"/>
+    <circle cx="375" cy="155" r="2.5" fill="white" opacity="0.22"/>
+    <circle cx="638" cy="48"  r="4"   fill="white" opacity="0.26"/>
+    <circle cx="935" cy="175" r="2.5" fill="white" opacity="0.20"/>
+    <circle cx="1160" cy="72" r="3.5" fill="white" opacity="0.24"/>
+    <circle cx="1385" cy="195" r="2"  fill="white" opacity="0.18"/>
+    <circle cx="195" cy="490" r="3"   fill="white" opacity="0.20"/>
+    <circle cx="58"  cy="695" r="4"   fill="white" opacity="0.24"/>
+    <circle cx="415" cy="830" r="2.5" fill="white" opacity="0.20"/>
+    <circle cx="785" cy="865" r="3"   fill="white" opacity="0.18"/>
+    <circle cx="1110" cy="748" r="3.5" fill="white" opacity="0.22"/>
+    <circle cx="1340" cy="650" r="2.5" fill="white" opacity="0.20"/>
+    <circle cx="1425" cy="835" r="2"  fill="white" opacity="0.18"/>
+    <circle cx="575" cy="445" r="2.5" fill="white" opacity="0.16"/>
+    <circle cx="1240" cy="415" r="3"  fill="white" opacity="0.20"/>
+    <circle cx="862"  cy="630" r="2"  fill="white" opacity="0.16"/>
+    <circle cx="42"   cy="335" r="2.5" fill="white" opacity="0.18"/>
+    <circle cx="1065" cy="310" r="2"  fill="white" opacity="0.18"/>
+    <circle cx="705"  cy="280" r="2"  fill="white" opacity="0.14"/>
+    <circle cx="1395" cy="440" r="2"  fill="white" opacity="0.16"/>
+
+    <!--
+      4-pointed sparkle stars — matching the star shapes in the logos.
+      Unit path: M 0,-1 L .1,-.1 L 1,0 L .1,.1 L 0,1 L -.1,.1 L -1,0 L -.1,-.1 Z
+      Scaled and positioned via transform.
+    -->
+    <path transform="translate(148,142) scale(10)" fill="white" opacity="0.13"
+          d="M 0,-1 L .1,-.1 L 1,0 L .1,.1 L 0,1 L -.1,.1 L -1,0 L -.1,-.1 Z"/>
+    <path transform="translate(720,85) scale(7)" fill="white" opacity="0.11"
+          d="M 0,-1 L .1,-.1 L 1,0 L .1,.1 L 0,1 L -.1,.1 L -1,0 L -.1,-.1 Z"/>
+    <path transform="translate(1255,215) scale(9)" fill="white" opacity="0.12"
+          d="M 0,-1 L .1,-.1 L 1,0 L .1,.1 L 0,1 L -.1,.1 L -1,0 L -.1,-.1 Z"/>
+    <path transform="translate(318,728) scale(8)" fill="white" opacity="0.10"
+          d="M 0,-1 L .1,-.1 L 1,0 L .1,.1 L 0,1 L -.1,.1 L -1,0 L -.1,-.1 Z"/>
+    <path transform="translate(1088,762) scale(10)" fill="white" opacity="0.11"
+          d="M 0,-1 L .1,-.1 L 1,0 L .1,.1 L 0,1 L -.1,.1 L -1,0 L -.1,-.1 Z"/>
+    <path transform="translate(545,195) scale(6)" fill="white" opacity="0.09"
+          d="M 0,-1 L .1,-.1 L 1,0 L .1,.1 L 0,1 L -.1,.1 L -1,0 L -.1,-.1 Z"/>
+    <path transform="translate(980,85) scale(8)" fill="white" opacity="0.10"
+          d="M 0,-1 L .1,-.1 L 1,0 L .1,.1 L 0,1 L -.1,.1 L -1,0 L -.1,-.1 Z"/>
+
+  </svg>
+
+  <!-- Sound toggle -->
+  <div class="sound-toggle" id="soundToggle">
+    <span class="sound-label">Sound</span>
+    <button class="toggle-btn" id="toggleBtn" aria-pressed="false" aria-label="Enable piano sound">
+      <span class="toggle-thumb"></span>
+    </button>
+  </div>
+
+  <main>
+
+    <header>
+      <p class="eyebrow">synthesizer-project.github.io</p>
+      <h1>The Synthesizer Project</h1>
+      <p class="tagline">An open source suite of tools for forward and inverse modelling of astrophysical observables</p>
+    </header>
+
+    <!-- Piano keyboard divider — echoes the keys in every project logo -->
+    <div class="keyboard-divider" id="keyboardDivider" aria-hidden="true"></div>
+
+    <section class="projects" aria-label="Projects">
+
+      <!-- Synthesizer -->
+      <a class="card" href="https://synthesizer-project.github.io/synthesizer/">
+        <img class="card-logo" src="images/synthesizer_logo.png" alt="Synthesizer logo">
+        <h2>Synthesizer</h2>
+        <p>Fast and flexible generation of astrophysical observables</p>
+      </a>
+
+      <!-- Synference -->
+      <a class="card" href="https://synthesizer-project.github.io/synference/">
+        <img class="card-logo" src="images/synference_logo.png" alt="Synference logo">
+        <h2>Synference</h2>
+        <p>A Spectral Energy Distribution fitting code utilising Simulation Based Inference</p>
+      </a>
+
+      <!-- Grid Generation -->
+      <a class="card" href="https://github.com/synthesizer-project/grid-generation" target="_blank" rel="noopener noreferrer">
+        <img class="card-logo" src="images/grids_logo.png" alt="Grid Generation logo">
+        <h2>Grid Generation</h2>
+        <p>Stellar, AGN and photoionisation processed grid generation scripts</p>
+      </a>
+
+      <!-- Symulacra — coming soon -->
+      <div class="card card--coming-soon" aria-label="Symulacra, coming soon">
+        <div class="card-logo-placeholder" aria-hidden="true">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="1.2" stroke-linecap="round">
+            <circle cx="12" cy="12" r="9"/>
+            <path d="M12 8v5M12 16.5h.01"/>
+          </svg>
+        </div>
+        <h2>Symulacra <span class="badge">Soon</span></h2>
+        <p>A Differentiable Emulator for Emission Grids</p>
+      </div>
+
+    </section>
+
+    <footer>
+      <a href="https://github.com/synthesizer-project" target="_blank" rel="noopener noreferrer">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+        </svg>
+        synthesizer-project.github.io
+      </a>
+    </footer>
+
+  </main>
+  <script>
+  (function () {
+    const WHITE_W = 14, WHITE_H = 22, BLACK_W = 8, BLACK_H = 14;
+    const WHITE_NOTES = ['C','D','E','F','G','A','B'];
+    const HAS_BLACK   = [true,true,false,true,true,true,false];
+    const BLACK_NAME  = {0:'C#',1:'D#',3:'F#',4:'G#',5:'A#'};
+    const START_OCT   = 2;
+
+    let audioCtx = null;
+    let soundOn  = false;
+
+    const divider   = document.getElementById('keyboardDivider');
+    const toggleBtn = document.getElementById('toggleBtn');
+    const toggleWrap = document.getElementById('soundToggle');
+
+    // ── Frequency lookup ──────────────────────────────────────────
+    const NOTE_MAP = {C:0,'C#':1,D:2,'D#':3,E:4,F:5,'F#':6,G:7,'G#':8,A:9,'A#':10,B:11};
+    function noteFreq(name, octave) {
+      const midi = (octave + 1) * 12 + NOTE_MAP[name];
+      return 440 * Math.pow(2, (midi - 69) / 12);
+    }
+
+    // ── Build keyboard SVG ────────────────────────────────────────
+    function buildKeyboard() {
+      const W = divider.offsetWidth;
+      if (!W) return;
+
+      const numWhite = Math.floor(W / WHITE_W);
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('width', '100%');
+      svg.setAttribute('height', WHITE_H);
+      svg.style.display = 'block';
+
+      const whites = [], blacks = [];
+
+      for (let i = 0; i < numWhite; i++) {
+        const pos  = i % 7;
+        const oct  = START_OCT + Math.floor(i / 7);
+        const freq = noteFreq(WHITE_NOTES[pos], oct);
+        const r = document.createElementNS(ns, 'rect');
+        r.setAttribute('x', i * WHITE_W + 0.5);
+        r.setAttribute('y', 0);
+        r.setAttribute('width',  WHITE_W - 1);
+        r.setAttribute('height', WHITE_H);
+        r.setAttribute('fill', 'white');
+        r.setAttribute('data-freq', freq);
+        r.classList.add('piano-key', 'piano-key--white');
+        whites.push(r);
+      }
+
+      for (let i = 0; i < numWhite; i++) {
+        const pos = i % 7;
+        if (!HAS_BLACK[pos]) continue;
+        const x = (i + 1) * WHITE_W - BLACK_W / 2;
+        if (x + BLACK_W > W) continue;
+        const oct  = START_OCT + Math.floor(i / 7);
+        const freq = noteFreq(BLACK_NAME[pos], oct);
+        const r = document.createElementNS(ns, 'rect');
+        r.setAttribute('x', x);
+        r.setAttribute('y', 0);
+        r.setAttribute('width',  BLACK_W);
+        r.setAttribute('height', BLACK_H);
+        r.setAttribute('fill', '#07101f');
+        r.setAttribute('rx', 1);
+        r.setAttribute('data-freq', freq);
+        r.classList.add('piano-key', 'piano-key--black');
+        blacks.push(r);
+      }
+
+      // Whites first so blacks render on top
+      whites.forEach(r => svg.appendChild(r));
+      blacks.forEach(r => svg.appendChild(r));
+
+      [...whites, ...blacks].forEach(key => {
+        key.addEventListener('mouseenter', () => {
+          if (soundOn) playNote(parseFloat(key.getAttribute('data-freq')));
+        });
+      });
+
+      divider.innerHTML = '';
+      divider.appendChild(svg);
+    }
+
+    // ── Audio synthesis ───────────────────────────────────────────
+    function ensureAudio() {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+
+    function playNote(freq) {
+      ensureAudio();
+      const now  = audioCtx.currentTime;
+      const gain = audioCtx.createGain();
+      gain.connect(audioCtx.destination);
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.20, now + 0.005);  // sharp attack
+      gain.gain.exponentialRampToValueAtTime(0.07, now + 0.18); // decay
+      gain.gain.exponentialRampToValueAtTime(0.001, now + 1.4); // release
+
+      // Three partials: fundamental + 2nd + 3rd harmonic
+      [[freq, 'sine', 0.6], [freq * 2, 'sine', 0.22], [freq * 3, 'triangle', 0.08]]
+        .forEach(([f, type, vol]) => {
+          const osc = audioCtx.createOscillator();
+          const g   = audioCtx.createGain();
+          osc.type = type;
+          osc.frequency.value = f;
+          g.gain.value = vol;
+          osc.connect(g);
+          g.connect(gain);
+          osc.start(now);
+          osc.stop(now + 1.5);
+        });
+    }
+
+    // ── Toggle ────────────────────────────────────────────────────
+    toggleBtn.addEventListener('click', () => {
+      soundOn = !soundOn;
+      toggleBtn.classList.toggle('active', soundOn);
+      toggleBtn.setAttribute('aria-pressed', soundOn);
+      toggleWrap.classList.toggle('active', soundOn);
+      divider.classList.toggle('sound-enabled', soundOn);
+      if (soundOn) ensureAudio();
+    });
+
+    // ── Init ──────────────────────────────────────────────────────
+    buildKeyboard();
+    new ResizeObserver(buildKeyboard).observe(divider);
+  })();
+  </script>
+</body>
+</html>
